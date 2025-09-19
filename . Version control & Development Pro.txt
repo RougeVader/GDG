@@ -1,0 +1,2 @@
+. Version control & Development Process 
+a. The entire development workflow must be documented on GitHub with proper commits and coherent git commit messages b. Do not upload your final project in a single commit. Your commit historyshould clearly reflect your thought process and debuggin steps.

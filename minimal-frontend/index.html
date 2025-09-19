@@ -1,0 +1,150 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Console Chat</title>
+    <style>
+        body {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 16px;
+            margin: 0;
+            padding: 20px;
+        }
+        #chat-container {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 40px);
+        }
+        #chat-log {
+            flex-grow: 1;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            border: 1px solid #333;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        #prompt-container {
+            display: flex;
+        }
+        #prompt-input {
+            flex-grow: 1;
+            background-color: #252526;
+            color: #d4d4d4;
+            border: 1px solid #333;
+            padding: 10px;
+            font-family: inherit;
+            font-size: inherit;
+        }
+        .user-message {
+            color: #9cdcfe;
+        }
+        .ai-message {
+            color: #ce9178;
+        }
+    </style>
+</head>
+<body>
+    <div id="chat-container">
+        <div id="chat-log"></div>
+        <div id="prompt-container">
+            <input type="text" id="prompt-input" placeholder="Type your message..." autofocus>
+        </div>
+    </div>
+
+    <script>
+        const chatLog = document.getElementById('chat-log');
+        const promptInput = document.getElementById('prompt-input');
+
+        let context = [];
+
+        const addMessage = (sender, message, className) => {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add(className);
+            messageElement.textContent = `${sender}: ${message}`;
+            chatLog.appendChild(messageElement);
+            chatLog.scrollTop = chatLog.scrollHeight;
+        };
+        
+        const appendToLastMessage = (chunk) => {
+            const lastMessage = chatLog.lastChild;
+            if (lastMessage) {
+                lastMessage.textContent += chunk;
+                chatLog.scrollTop = chatLog.scrollHeight;
+            }
+        };
+
+        promptInput.addEventListener('keydown', async (event) => {
+            if (event.key === 'Enter') {
+                const prompt = promptInput.value;
+                if (prompt.trim() === '') {
+                    return;
+                }
+                promptInput.value = '';
+
+                addMessage('You', prompt, 'user-message');
+                addMessage('AI', '', 'ai-message');
+
+                try {
+                    const response = await fetch('http://localhost:8000/api/chat', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            prompt: prompt,
+                            context: context,
+                        }),
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        appendToLastMessage(`Error: ${errorData.detail || response.status}`);
+                        return;
+                    }
+
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+                    let buffer = '';
+
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+
+                        buffer += decoder.decode(value, { stream: true });
+
+                        const lines = buffer.split('\n');
+                        buffer = lines.pop() || '';
+
+                        for (const line of lines) {
+                            if (line.startsWith('data: ')) {
+                                const jsonString = line.substring(6);
+                                if (jsonString) {
+                                    try {
+                                        const data = JSON.parse(jsonString);
+                                        if (data.response) {
+                                            appendToLastMessage(data.response);
+                                        }
+                                        if (data.done) {
+                                            context = data.context;
+                                        }
+                                    } catch (e) {
+                                        console.error('Failed to parse JSON:', jsonString, e);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (error) {
+                    appendToLastMessage(`Error: ${error.message}`);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

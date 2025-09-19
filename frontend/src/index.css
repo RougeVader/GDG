@@ -1,0 +1,23 @@
+:root {
+  --primary-color: #6f42c1; /* A vibrant purple */
+  --secondary-color: #e9ecef; /* Light gray */
+  --user-bubble-bg: var(--primary-color);
+  --user-bubble-text: #ffffff;
+  --ai-bubble-bg: #f8f9fa; /* Off-white */
+  --ai-bubble-text: #212529;
+  --chat-bg: #f0f2f5; /* Lighter background for the chat area */
+  --header-bg: #343a40; /* Darker header */
+  --header-text: #ffffff;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--chat-bg);
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
