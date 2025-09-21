@@ -54,4 +54,4 @@ Now, open your web browser and navigate to `http://localhost:8001`. You can star
 
 ---
 
-This ReadMe file and UI was developed with the help of a conversational AI assistant with referencing from Youtube
+This ReadMe file,Code commenting and UI was developed/made with the help of a conversational AI assistant with referencing from Youtube
